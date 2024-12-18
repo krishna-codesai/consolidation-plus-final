@@ -10,43 +10,45 @@ max_re_rolls = 5
 # Initializing the DataFrame for tracking rolls
 roll_history_df = pd.DataFrame(columns=["Player", "Roll", "Turn"])
 
+#Initializes the three dice ranging from 1-6
 def roll_dice():
     """ Simulates rolling 3 dice. """
     return [random.randint(1, 6) for _ in range(3)]
 
+#Initializes the tuple out feature if three of the numbers are all the same
 def tuple_out(dice):
     """ Checks if all three dice are the same, indicating the player has 'tupled out'. """
     return dice[0] == dice[1] == dice[2]
 
+#Fixed dice feature moves onto second player if two numbers are the same
 def fixed_dice(dice):
     """ Identifies indices of dice that should be fixed if two dice are the same. """
     counts = {x: dice.count(x) for x in dice}
     fixed_indices = []
-    # Defines what a fixed dice is 
     for i in range(len(dice)):
         if counts[dice[i]] == 2:
             fixed_indices.append(i)
     return fixed_indices
 
-
+#Initializes the ability to reroll the dice
 def re_roll_dice(dice, fixed_indices):
     """ Re-rolls only non-fixed dice """
-    # Uses the fixed_indices from the fixed_dice function to identify what a fixed dice it 
-    return[random.randint(1,6) if i not in fixed_indices else dice[i] for i in range(3)]
+    return [random.randint(1, 6) if i not in fixed_indices else dice[i] for i in range(3)]
 
+
+#Initializes the yes and no options for the players
 def get_player_choice(player_name):
-    """ Validates the input for stopping or continuing the turn."""
-    # Gives the user a chance to input "y" or "n" if the input is not valid the first time
+    """ Validates the input for stopping or continuing the turn. """
     while True:
-        # Makes sure that the user only uses "y" and "n" when asked if they want to continue
-        #.strip() and .lower() make it so that white space and upper case doesn't matter
-        choice = input(f"{player_name}, stop and keep score? (y/n): ").strip().lower()
+#Two character options for the player to choose from
+        choice = input(f"{player_name}, do you want to stop and keep your score? (y/n): ").strip().lower()
         if choice in {"y", "n"}:
             return choice 
         else: 
-            # Error message if input is invalid 
+#Makes sure that there is an error message and points out an error if anything besides y or n is selected
             print("Invalid input. Please enter 'y' or 'n'.")
 
+#Initializes the player turns 
 def play_turn(player_name, computer=False):
     """ Plays one turn for a player."""
     dice = roll_dice()
