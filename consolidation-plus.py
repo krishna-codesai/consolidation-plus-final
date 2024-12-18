@@ -1,10 +1,14 @@
 # imports the random module 
 import random
+import pandas as pd
+import time
 
-# Target score to win the game
-target = int(input("Enter the target score to win or default to 50: ") or 50)
-# Max re-rolls 
-max_re_rolls = int(input("Enter the maximum re-rolls or default to 5: ") or 5)
+# Defined values and Target score to win the game
+target = 50
+max_re_rolls = 5
+
+# Initializing the DataFrame for tracking rolls
+roll_history_df = pd.DataFrame(columns=["Player", "Roll", "Turn"])
 
 def roll_dice():
     """ Simulates rolling 3 dice. """
