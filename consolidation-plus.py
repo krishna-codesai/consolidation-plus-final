@@ -48,7 +48,7 @@ def get_player_choice(player_name):
 #Makes sure that there is an error message and points out an error if anything besides y or n is selected
             print("Invalid input. Please enter 'y' or 'n'.")
 
-#Initializes the player turns 
+#Initializes the player turns
 def play_turn(player_name):
     """ Plays one turn for a player. """
     global roll_history_df
@@ -77,7 +77,8 @@ def play_turn(player_name):
         return score
 
     re_roll_count = 0  # Initialize re-roll count
-while re_roll_count < max_re_rolls:
+
+    while re_roll_count < max_re_rolls:
         stop = get_player_choice(player_name)  # Call get_player_choice here
         if stop == "y":
             score = sum(dice)
@@ -132,10 +133,11 @@ while max(scores) < target:
     print(f"{player_names[current_player]}'s total score: {scores[current_player]}")
     current_player = 1 - current_player
 
+#Addresses the winner and scores of the players
 winner = player_names[0] if scores[0] >= target else player_names[1]
 print(f"\n{winner} wins with a score of {max(scores)}!")
 
-# Analyze roll history
+# Analyze roll history and provides the statistics of each time and player
 print("\nGame Statistics:")
 for player in player_names:
     player_data = roll_history_df[roll_history_df["Player"] == player]
