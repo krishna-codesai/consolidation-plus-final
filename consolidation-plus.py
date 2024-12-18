@@ -1,4 +1,4 @@
-# imports the random module 
+# imports the random, panda, and time modules
 import random
 import pandas as pd
 import time
