@@ -49,12 +49,15 @@ def get_player_choice(player_name):
             print("Invalid input. Please enter 'y' or 'n'.")
 
 #Initializes the player turns 
-def play_turn(player_name, computer=False):
-    """ Plays one turn for a player."""
+def play_turn(player_name):
+    """ Plays one turn for a player. """
+    global roll_history_df
     dice = roll_dice()
     roll_history = [tuple(dice)]
+    print(f"{player_name} is rolling the dice...")
+    time.sleep(1)  # Add suspense
     print(f"{player_name} rolls: {dice}")
-    
+
     # Check if the player tupled out
     if tuple_out(dice):
         print(f"Tuple out! {player_name} scores 0 points this turn.")
@@ -67,66 +70,77 @@ def play_turn(player_name, computer=False):
         score = sum(dice)
         print(f"{player_name} scores {score} points this turn.")
         print(f"Roll history for this turn: {roll_history}")
+        roll_history_df = pd.concat([
+            roll_history_df,
+            pd.DataFrame([{"Player": player_name, "Roll": dice, "Turn": 0}])
+        ], ignore_index=True)
         return score
 
     re_roll_count = 0  # Initialize re-roll count
-
-    while re_roll_count < max_re_rolls:  
-        # Limit the number of rerolls
-        if computer:
-            stop = "y" if sum(dice) >= 12 or random.choice([True, False]) else "n"
-        else:
-            stop = get_player_choice(player_name)
-
-        # If the player decides to stop the game 
+while re_roll_count < max_re_rolls:
+        stop = get_player_choice(player_name)  # Call get_player_choice here
         if stop == "y":
             score = sum(dice)
             print(f"{player_name} scores {score} points this turn.")
             print(f"Roll history for this turn: {roll_history}")
+            roll_history_df = pd.concat([
+                roll_history_df,
+                pd.DataFrame([{"Player": player_name, "Roll": dice, "Turn": re_roll_count}])
+            ], ignore_index=True)
             return score
 
-        # If the player decides to re-roll
         re_roll_count += 1
-        # Re-roll only non-fixed dice 
-        dice = re_roll_dice(dice, fixed) 
+        dice = re_roll_dice(dice, fixed)
         roll_history.append(tuple(dice))
         print(f"{player_name} re-rolls: {dice}")
 
-        # Check for tuple out after re-roll
         if tuple_out(dice):
             print(f"Tuple out! {player_name} scores 0 points this turn.")
+            roll_history_df = pd.concat([
+                roll_history_df,
+                pd.DataFrame([{"Player": player_name, "Roll": dice, "Turn": re_roll_count}])
+            ], ignore_index=True)
             return 0
 
-        # Recalculate fixed dice after each re-roll
-        fixed = fixed_dice(dice) 
+        fixed = fixed_dice(dice)
         if fixed:
             print(f"{player_name} rolled fixed dice: {dice}. Turn ends.")
             score = sum(dice)
             print(f"{player_name} scores {score} points this turn.")
             print(f"Roll history for this turn: {roll_history}")
+            roll_history_df = pd.concat([
+                roll_history_df,
+                pd.DataFrame([{"Player": player_name, "Roll": dice, "Turn": re_roll_count}])
+            ], ignore_index=True)
             return score
 
-
+    return 0  # Ensure a return value if no conditions are met
 
 # Initializes scores
 scores = [0, 0]
-# Defines player names 
 player_names = ["Player 1", "Player 2"]
-# Initializes current_player variable 
 current_player = 0
 
-# Game loop 
-# While the max scores are less than the target score
+# Game loop
 while max(scores) < target:
-    # Message that tells player's whose turn it is  
     print(f"\n{player_names[current_player]}'s turn!")
-    # Score that the player earns each turn 
+    start_time = time.process_time()
     turn_score = play_turn(player_names[current_player])
+    end_time = time.process_time()
+    print(f"Turn processing time for {player_names[current_player]}: {end_time - start_time:.2f} seconds")
     scores[current_player] += turn_score
     print(f"{player_names[current_player]}'s total score: {scores[current_player]}")
-    # Swtiches players 
-    current_player = 1 - current_player  
-# How the winner is determined 
+    current_player = 1 - current_player
+
 winner = player_names[0] if scores[0] >= target else player_names[1]
-# Winner message 
 print(f"\n{winner} wins with a score of {max(scores)}!")
+
+# Analyze roll history
+print("\nGame Statistics:")
+for player in player_names:
+    player_data = roll_history_df[roll_history_df["Player"] == player]
+    print(f"{player}:")
+    print(f" - Total Rolls: {len(player_data)}")
+    if not player_data.empty:
+        print(f" - Average Score: {player_data['Roll'].apply(sum).mean():.2f}")
+        print(f" - Most Frequent Value: {pd.Series([val for sublist in player_data['Roll'] for val in sublist]).mode()[0]}")
